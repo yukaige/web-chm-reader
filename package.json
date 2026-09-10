@@ -1,15 +1,15 @@
 {
-  "name": "vue-chm-reader",
-  "version": "0.1.0",
-  "description": "A browser-first CHM reader with a framework-agnostic TypeScript API and Vue 3 components.",
+  "name": "web-chm-reader",
+  "version": "0.2.0",
+  "description": "A browser-first CHM reader for vanilla JavaScript, React and Vue.",
   "author": "yukaige",
-  "homepage": "https://yukaige.github.io/vue-chm-reader/",
+  "homepage": "https://yukaige.github.io/web-chm-reader/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yukaige/vue-chm-reader.git"
+    "url": "git+https://github.com/yukaige/web-chm-reader.git"
   },
   "bugs": {
-    "url": "https://github.com/yukaige/vue-chm-reader/issues"
+    "url": "https://github.com/yukaige/web-chm-reader/issues"
   },
   "type": "module",
   "sideEffects": [
@@ -31,6 +31,14 @@
       "types": "./dist/vue.d.ts",
       "import": "./dist/vue.js"
     },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
+    },
+    "./element": {
+      "types": "./dist/element.d.ts",
+      "import": "./dist/element.js"
+    },
     "./style.css": "./dist/style.css"
   },
   "scripts": {
@@ -45,6 +53,10 @@
   "keywords": [
     "chm",
     "html-help",
+    "javascript",
+    "react",
+    "solidjs",
+    "svelte",
     "vue",
     "reader",
     "ebook"
@@ -59,13 +71,26 @@
     "dompurify": "^3.2.6"
   },
   "peerDependencies": {
+    "react": ">=18.0.0",
     "vue": "^3.4.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
+    "@types/react": "^19.1.11",
+    "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/test-utils": "^2.4.6",
     "jsdom": "^26.1.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
     "typescript": "^5.9.2",
     "vite": "^7.1.3",
     "vite-plugin-dts": "^4.5.4",

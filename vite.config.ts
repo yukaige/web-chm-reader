@@ -7,13 +7,15 @@ export default defineConfig({
   build: {
     lib: {
       entry: {
+        element: 'src/element.ts',
         index: 'src/index.ts',
+        react: 'src/react.ts',
         vue: 'src/vue.ts',
       },
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['vue', 'chmlib-ts', 'dompurify'],
+      external: ['react', 'vue', 'chmlib-ts', 'dompurify'],
       output: {
         assetFileNames: (asset) => asset.names?.some((name) => name.endsWith('.css')) ? 'style.css' : 'assets/[name][extname]',
       },

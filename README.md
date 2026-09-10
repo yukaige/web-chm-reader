@@ -1,8 +1,8 @@
-# vue-chm-reader
+# web-chm-reader
 
-在浏览器中读取 `.chm` 的 TypeScript 库，包含框架无关的核心 API 和 Vue 3 阅读器组件。文件按需切片读取，内容不会上传到服务器。
+在浏览器中读取 `.chm` 的 TypeScript 库。提供框架无关的核心 API、标准 Web Component，以及 React、Vue 3 阅读器组件。文件按需切片读取，内容不会上传到服务器。
 
-在线体验：[https://yukaige.github.io/vue-chm-reader/](https://yukaige.github.io/vue-chm-reader/)
+在线体验：[https://yukaige.github.io/web-chm-reader/](https://yukaige.github.io/web-chm-reader/)
 
 ## 功能
 
@@ -12,74 +12,130 @@
 - 自动改写 HTML 内部链接、图片、样式表和 CSS 资源
 - 全文搜索、前进后退、字号与亮暗主题
 - HTML 清理与受限 iframe 渲染
-- 无 `.hhc` 时自动用 HTML 文件生成后备目录
+- 原生 JavaScript、React、Vue、Svelte 和 SolidJS 可用
 
 ## 安装
 
 ```bash
-npm install vue-chm-reader
+npm install web-chm-reader
 ```
+
+Vue 和 React 都是可选 peer dependency。核心 API 和 Web Component 不需要安装 UI 框架。
+
+## 原生 JavaScript / Web Component
+
+```js
+import 'web-chm-reader/element'
+import 'web-chm-reader/style.css'
+
+const reader = document.querySelector('chm-reader')
+document.querySelector('#file').addEventListener('change', (event) => {
+  reader.source = event.target.files[0]
+})
+```
+
+```html
+<input id="file" type="file" accept=".chm">
+<chm-reader height="720px" theme="auto"></chm-reader>
+```
+
+也可以只使用核心 API：
+
+```ts
+import { ChmArchive } from 'web-chm-reader'
+
+const archive = await ChmArchive.open(file, { encoding: 'gb18030' })
+const page = await archive.render(archive.metadata.defaultTopic!)
+const results = await archive.search('安装')
+archive.close()
+```
+
+## React
+
+```tsx
+import { ChmReader } from 'web-chm-reader/react'
+import 'web-chm-reader/style.css'
+
+export default function App() {
+  return <ChmReader height="720px" onError={console.error} />
+}
+```
+
+通过 `ref` 可调用 `navigate(path)`、`search(query)` 并取得 `archive`。
 
 ## Vue 3
 
 ```vue
 <script setup lang="ts">
-import { ref } from 'vue'
-import { ChmReader } from 'vue-chm-reader/vue'
-import 'vue-chm-reader/style.css'
-
-const file = ref<File | null>(null)
+import { ChmReader } from 'web-chm-reader/vue'
+import 'web-chm-reader/style.css'
 </script>
 
 <template>
-  <input
-    type="file"
-    accept=".chm"
-    @change="file = ($event.target as HTMLInputElement).files?.[0] ?? null"
-  >
-  <ChmReader :source="file" height="720px" />
+  <ChmReader height="720px" @error="console.error" />
 </template>
 ```
 
-组件本身也带有拖放和文件选择空状态，所以也可以只写：
+## Svelte
 
-```vue
-<ChmReader height="720px" />
+```svelte
+<script lang="ts">
+  import 'web-chm-reader/element'
+  import 'web-chm-reader/style.css'
+
+  let reader: HTMLElement & { source: File | null }
+</script>
+
+<input type="file" accept=".chm" on:change={(event) => {
+  reader.source = event.currentTarget.files?.[0] ?? null
+}}>
+<chm-reader bind:this={reader} height="720px" />
 ```
 
-### 组件属性
+## SolidJS
 
-| 属性 | 类型 | 默认值 | 说明 |
-| --- | --- | --- | --- |
-| `source` | `Blob \| ArrayBuffer \| Uint8Array \| null` | `null` | CHM 数据源 |
-| `initialPath` | `string` | `''` | 首次打开的内部页面 |
-| `encoding` | `string` | `'gb18030'` | 无编码声明时的回退编码 |
-| `height` | `string` | `'720px'` | 阅读器高度 |
-| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | 主题 |
-| `showSearch` | `boolean` | `true` | 是否显示全文搜索 |
+```tsx
+import 'web-chm-reader/element'
+import 'web-chm-reader/style.css'
 
-事件包括 `ready(archive)`、`navigate(path)` 和 `error(error)`。组件实例暴露 `navigate(path)`、`search()` 与 `archive`。
+export default function App() {
+  let reader!: HTMLElement & { source: File | null }
+  return <>
+    <input type="file" accept=".chm" onChange={(event) => {
+      reader.source = event.currentTarget.files?.[0] ?? null
+    }} />
+    <chm-reader ref={reader} height="720px" />
+  </>
+}
+```
+
+Svelte、SolidJS 也可以绕过 Web Component，直接调用框架无关的 `ChmArchive` API。
+
+## 通用配置
+
+| 配置 | 默认值 | 说明 |
+| --- | --- | --- |
+| `source` | `null` | `Blob \| ArrayBuffer \| Uint8Array` CHM 数据源 |
+| `initialPath` / `initial-path` | `''` | 首次打开的内部页面 |
+| `encoding` | `'gb18030'` | 无编码声明时的回退编码 |
+| `height` | `'720px'` | 阅读器高度 |
+| `theme` | `'auto'` | `light`、`dark` 或 `auto` |
+| `showSearch` / `show-search` | `true` | 是否显示全文搜索 |
 
 ## 核心 API
 
 ```ts
-import { ChmArchive } from 'vue-chm-reader'
-
-const file = input.files![0]
-const archive = await ChmArchive.open(file, { encoding: 'gb18030' })
-
-console.log(archive.metadata)
-console.log(archive.toc)
-console.log(archive.entries)
-
-const page = await archive.render(archive.metadata.defaultTopic!)
-const results = await archive.search('安装')
-const rawImage = await archive.readBinary('/images/logo.png')
-
+archive.metadata
+archive.toc
+archive.entries
+await archive.readBinary(path)
+await archive.readText(path)
+await archive.render(path)
+await archive.search(query)
 archive.close()
 ```
 
-`Blob`/`File` 会按需切片读取；`ArrayBuffer` 与 `Uint8Array` 适合已经在内存里的数据。调用 `close()` 会同时释放阅读时生成的 Blob URL。
+`Blob`/`File` 会按需切片读取；`ArrayBuffer` 与 `Uint8Array` 适合已经在内存里的数据。
 
 ## 本地开发
 
@@ -91,7 +147,7 @@ npm run check
 
 ## 安全边界
 
-默认会清理脚本、事件处理器、表单、嵌入对象，并在没有脚本权限的 sandbox iframe 中显示页面。外部链接会在新窗口打开。若传入 `{ sanitize: false }`，iframe 仍不允许脚本，但只应对可信 CHM 使用该选项。
+默认会清理脚本、事件处理器、表单、嵌入对象，并在没有脚本权限的 sandbox iframe 中显示页面。外部链接会在新窗口打开，外部图片和样式资源不会自动请求。
 
 ## 已知限制
 

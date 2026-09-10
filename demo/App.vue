@@ -10,8 +10,8 @@ const source = ref<File | null>(null)
     <header class="demo-header">
       <div>
         <span class="demo-eyebrow">LOCAL · PRIVATE · FAST</span>
-        <h1>Vue CHM Reader</h1>
-        <p>在浏览器中直接打开 Microsoft HTML Help 文档。</p>
+        <h1>Web CHM Reader</h1>
+        <p>原生 JavaScript、React 和 Vue 都可使用的浏览器 CHM 阅读器。</p>
       </div>
       <label class="demo-open-button">
         选择 CHM
