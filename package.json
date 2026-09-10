@@ -1,7 +1,7 @@
 {
   "name": "web-chm-reader",
-  "version": "0.2.0",
-  "description": "A browser-first CHM reader for vanilla JavaScript, React and Vue.",
+  "version": "0.2.1",
+  "description": "A browser-first CHM reader for JavaScript, React, Vue, Svelte and SolidJS.",
   "author": "yukaige",
   "homepage": "https://yukaige.github.io/web-chm-reader/",
   "repository": {

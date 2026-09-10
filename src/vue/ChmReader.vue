@@ -12,6 +12,7 @@ const props = withDefaults(defineProps<{
   height?: string
   theme?: 'light' | 'dark' | 'auto'
   showSearch?: boolean
+  locale?: 'en' | 'zh-CN'
 }>(), {
   source: null,
   initialPath: '',
@@ -19,6 +20,7 @@ const props = withDefaults(defineProps<{
   height: '720px',
   theme: 'auto',
   showSearch: true,
+  locale: 'en',
 })
 
 const emit = defineEmits<{
@@ -48,6 +50,19 @@ let loadVersion = 0
 
 const canGoBack = computed(() => historyIndex.value > 0)
 const canGoForward = computed(() => historyIndex.value >= 0 && historyIndex.value < history.value.length - 1)
+const labels = computed(() => props.locale === 'zh-CN' ? {
+  contents: '目录', files: '个文件', back: '后退', forward: '前进', search: '搜索',
+  searchPlaceholder: '搜索整本 CHM…', searching: '搜索中', noResults: '没有找到匹配内容',
+  decrease: '缩小字号', increase: '放大字号', document: 'CHM 文档', opening: '正在打开…',
+  reading: '正在读取文档', cannotOpen: '无法打开', parsing: '正在解析 CHM…',
+  localOnly: '文件只在本机处理，不会上传', open: '打开 CHM 文档', drop: '拖入文件，或点击选择',
+} : {
+  contents: 'Contents', files: 'files', back: 'Back', forward: 'Forward', search: 'Search',
+  searchPlaceholder: 'Search this CHM…', searching: 'Searching', noResults: 'No matching content',
+  decrease: 'Decrease font size', increase: 'Increase font size', document: 'CHM document', opening: 'Opening…',
+  reading: 'Reading document', cannotOpen: 'Unable to open', parsing: 'Parsing CHM…',
+  localOnly: 'Processed locally. Nothing is uploaded.', open: 'Open a CHM document', drop: 'Drop a file here, or click to choose',
+})
 
 watch(() => props.source, (source) => { void openSource(source) }, { immediate: true })
 
@@ -189,34 +204,34 @@ defineExpose({ archive, navigate, search: runSearch })
     <template v-if="archive">
       <header class="vcr-toolbar">
         <div class="vcr-toolbar-group">
-          <button class="vcr-icon-button vcr-mobile-menu" type="button" aria-label="目录" @click="sidebarOpen = !sidebarOpen">
+          <button class="vcr-icon-button vcr-mobile-menu" type="button" :aria-label="labels.contents" @click="sidebarOpen = !sidebarOpen">
             <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
           </button>
-          <button class="vcr-icon-button" type="button" aria-label="后退" :disabled="!canGoBack" @click="moveHistory(-1)">
+          <button class="vcr-icon-button" type="button" :aria-label="labels.back" :disabled="!canGoBack" @click="moveHistory(-1)">
             <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg>
           </button>
-          <button class="vcr-icon-button" type="button" aria-label="前进" :disabled="!canGoForward" @click="moveHistory(1)">
+          <button class="vcr-icon-button" type="button" :aria-label="labels.forward" :disabled="!canGoForward" @click="moveHistory(1)">
             <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg>
           </button>
         </div>
         <div class="vcr-document-title" :title="pageTitle || archive.metadata.title">
-          <span class="vcr-title-kicker">{{ archive.metadata.title || 'CHM 文档' }}</span>
-          <strong>{{ pageTitle || '正在打开…' }}</strong>
+          <span class="vcr-title-kicker">{{ archive.metadata.title || labels.document }}</span>
+          <strong>{{ pageTitle || labels.opening }}</strong>
         </div>
         <div class="vcr-toolbar-group vcr-toolbar-end">
-          <button v-if="showSearch" class="vcr-icon-button" type="button" aria-label="搜索" @click="searchOpen = !searchOpen">
+          <button v-if="showSearch" class="vcr-icon-button" type="button" :aria-label="labels.search" @click="searchOpen = !searchOpen">
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
           </button>
-          <button class="vcr-text-button" type="button" aria-label="缩小字号" @click="changeZoom(-0.1)">A−</button>
-          <button class="vcr-text-button" type="button" aria-label="放大字号" @click="changeZoom(0.1)">A+</button>
+          <button class="vcr-text-button" type="button" :aria-label="labels.decrease" @click="changeZoom(-0.1)">A−</button>
+          <button class="vcr-text-button" type="button" :aria-label="labels.increase" @click="changeZoom(0.1)">A+</button>
         </div>
       </header>
 
       <div class="vcr-workspace">
         <aside class="vcr-sidebar" :class="{ 'is-open': sidebarOpen }">
           <div class="vcr-sidebar-heading">
-            <span>目录</span>
-            <small>{{ archive.entries.length }} 个文件</small>
+            <span>{{ labels.contents }}</span>
+            <small>{{ archive.entries.length }} {{ labels.files }}</small>
           </div>
           <nav aria-label="CHM 目录">
             <ul class="vcr-tree-list vcr-tree-root">
@@ -235,8 +250,8 @@ defineExpose({ archive, navigate, search: runSearch })
           <div v-if="searchOpen" class="vcr-search-panel">
             <form class="vcr-search-form" @submit.prevent="runSearch">
               <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
-              <input v-model="searchQuery" type="search" placeholder="搜索整本 CHM…" autofocus>
-              <button type="submit" :disabled="searching">{{ searching ? '搜索中' : '搜索' }}</button>
+              <input v-model="searchQuery" type="search" :placeholder="labels.searchPlaceholder" autofocus>
+              <button type="submit" :disabled="searching">{{ searching ? labels.searching : labels.search }}</button>
             </form>
             <div v-if="searching" class="vcr-search-progress"><i :style="{ width: `${searchProgress * 100}%` }" /></div>
             <div class="vcr-search-results">
@@ -244,7 +259,7 @@ defineExpose({ archive, navigate, search: runSearch })
                 <strong>{{ result.title }}</strong>
                 <span>{{ result.excerpt }}</span>
               </button>
-              <p v-if="!searching && searchQuery && !searchResults.length" class="vcr-empty-result">没有找到匹配内容</p>
+              <p v-if="!searching && searchQuery && !searchResults.length" class="vcr-empty-result">{{ labels.noResults }}</p>
             </div>
           </div>
           <iframe
@@ -256,8 +271,8 @@ defineExpose({ archive, navigate, search: runSearch })
             :title="pageTitle"
             @load="onFrameLoad"
           />
-          <div v-if="loading" class="vcr-loading" role="status"><i /><span>正在读取文档</span></div>
-          <div v-if="error" class="vcr-error" role="alert"><strong>无法打开</strong><span>{{ error }}</span></div>
+          <div v-if="loading" class="vcr-loading" role="status"><i /><span>{{ labels.reading }}</span></div>
+          <div v-if="error" class="vcr-error" role="alert"><strong>{{ labels.cannotOpen }}</strong><span>{{ error }}</span></div>
         </main>
       </div>
     </template>
@@ -265,8 +280,8 @@ defineExpose({ archive, navigate, search: runSearch })
     <label v-else class="vcr-dropzone">
       <input type="file" accept=".chm,application/vnd.ms-htmlhelp" @change="chooseFile">
       <span class="vcr-file-icon"><svg viewBox="0 0 48 48"><path d="M10 5h19l9 9v29H10z" /><path d="M29 5v10h9M17 24h14M17 31h14" /></svg></span>
-      <strong>{{ loading ? '正在解析 CHM…' : '打开 CHM 文档' }}</strong>
-      <span>{{ loading ? '文件只在本机处理，不会上传' : '拖入文件，或点击选择' }}</span>
+      <strong>{{ loading ? labels.parsing : labels.open }}</strong>
+      <span>{{ loading ? labels.localOnly : labels.drop }}</span>
       <small v-if="error">{{ error }}</small>
     </label>
   </section>
